@@ -14,7 +14,7 @@ const Navbar = () => {
           component={MainTabScreen}
           options={{ header: () => null }}
         />
-        <NavbarStack.Screen name="Chi Tiết Sản Phẩm" component={ProductPage} />
+        <NavbarStack.Screen name="Product" options={{headerTitle: "Chi tiết sản phẩm"}} component={ProductPage} />
       </NavbarStack.Navigator>
     </NavigationContainer>
   );

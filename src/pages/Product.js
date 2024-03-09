@@ -3,11 +3,18 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { SliderImages } from "../components/Slider";
 import { useEffect, useState } from "react";
 import { formatBigNumber } from "../helpers/number/fomatterCurrency";
+import { getProduct, getVariations } from "../apiClient/product";
 
 const ProductPage = ({ route }) => {
   const { product_slug } = route.params;
 
+  const [totalProduct, setTotalProduct] = useState(1);
+  const [inventory, setInventory] = useState(0);
+
   const [product, setProduct] = useState(null);
+  const [variations, setVariations] = useState([]);
+  const [variation, setVariation] = useState(null);
+
   const [selectOption, setSelectOption] = useState({});
   const onSelectOption = (key, value) => {
     if (selectOption[key] === value) {
@@ -19,21 +26,57 @@ const ProductPage = ({ route }) => {
     setSelectOption({ ...selectOption });
   };
 
-  const getProduct = async () => {
-    const res = await fetch(
-      `http://192.168.168.120:3001/api/v1/products/${product_slug}`
-    ).then((res) => res.json());
+  const handleGetProduct = async () => {
+    const res = await getProduct(product_slug);
 
     if (res.status === 200) {
       setProduct(res.payload);
+      setInventory(res.payload.inventory);
+      handleGetVariations(res.payload._id);
+    }
+  };
+
+  const handleGetVariation = () => {
+    const keys = Object.keys(selectOption);
+    const values = Object.values(selectOption);
+
+    if (keys.length < product.options.length) {
+      setVariation(null);
+      setInventory(product.inventory);
+      return;
+    }
+
+    const item = variations.find((variation) => {
+      const optitons = variation.options;
+
+      return optitons.every((option) => values.includes(option));
+    });
+
+    if (item) {
+      setVariation(item);
+      setInventory(item.inventory);
+    }
+  };
+
+  const handleGetVariations = async (product_id) => {
+    const res = await getVariations(product_id);
+
+    if (res.status === 200) {
+      setVariations(res.payload);
     }
   };
 
   useEffect(() => {
     if (product_slug) {
-      getProduct();
+      handleGetProduct();
     }
   }, []);
+
+  useEffect(() => {
+    if (product && product.options.length > 0) {
+      handleGetVariation();
+    }
+  }, [selectOption]);
 
   return (
     <ScrollView stickyHeaderHiddenOnScroll={true} scrollsToTop={true}>
@@ -41,20 +84,42 @@ const ProductPage = ({ route }) => {
 
       {product && (
         <View className="py-5 px-2">
-          <Text className="text-lg font-medium">{product.title}</Text>
+          {!variation && (
+            <Text className="text-lg font-medium">{product.title}</Text>
+          )}
+
+          {variation && (
+            <Text className="text-lg font-medium">{variation.title}</Text>
+          )}
 
           <View className="flex-row items-center mb-4 gap-5">
-            <Text className="text-sm">
-              {product.promotion_price > 0
-                ? formatBigNumber(product.promotion_price)
-                : formatBigNumber(product.price)}{" "}
-              VND
-            </Text>
+            {!variation && (
+              <Text className="text-sm">
+                {product.promotion_price > 0
+                  ? formatBigNumber(product.promotion_price)
+                  : formatBigNumber(product.price)}{" "}
+                VND
+              </Text>
+            )}
+
+            {variation && (
+              <Text className="text-sm">
+                {variation.promotion_price > 0
+                  ? formatBigNumber(variation.promotion_price)
+                  : formatBigNumber(variation.price)}{" "}
+                VND
+              </Text>
+            )}
+
             {product.promotion_price > 0 && (
               <Text className="text-xs line-through">
                 {formatBigNumber(product.price)} VND
               </Text>
             )}
+          </View>
+
+          <View className="pb-2">
+            <Text className="text-base font-medium">Còn Sẵn: {inventory}</Text>
           </View>
 
           {product.options.map((option) => (
@@ -81,17 +146,39 @@ const ProductPage = ({ route }) => {
             </View>
           ))}
 
-          <View className="py-5 gap-2">
-            <TouchableOpacity>
-              <Text className="text-base text-center text-white bg-primary px-5 py-2 rounded-md border border-transparent">
-                Mua Ngay
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="flex-row items-center justify-center border border-primary px-5 py-2 rounded-md">
-              <MaterialCommunityIcons name="cart" size={16} color={"#f8796c"} />
-              <Text className="text-base text-primary pl-2">Mua Ngay</Text>
-            </TouchableOpacity>
+          <View className="pb-2">
+            <Text className="text-base font-medium">
+              Đã bán: {formatBigNumber(product.sold)}
+            </Text>
           </View>
+
+          {inventory > 0 && (
+            <View className="py-5 gap-2">
+              <TouchableOpacity>
+                <Text className="text-base text-center text-white bg-primary px-5 py-2 rounded-md border border-transparent">
+                  Mua Ngay
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity className="flex-row items-center justify-center border border-primary px-5 py-2 rounded-md">
+                <MaterialCommunityIcons
+                  name="cart"
+                  size={16}
+                  color={"#f8796c"}
+                />
+                <Text className="text-base text-primary pl-2">Mua Ngay</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {inventory <= 0 && (
+            <View className="py-5 gap-2">
+              <TouchableOpacity disabled={true}>
+                <Text className="text-base text-center text-white bg-primary px-5 py-2 rounded-md border border-transparent">
+                  Hết hàng
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <View className="py-2">
             <Text className="text-base font-medium">Description</Text>

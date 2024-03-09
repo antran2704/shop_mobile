@@ -2,22 +2,19 @@ import { View, SafeAreaView, ScrollView } from "react-native";
 import { Banner } from "../components/Slider";
 import ProductSlide from "../components/Product/ProductSlide";
 import { useEffect, useState } from "react";
+import { getProducts } from "../apiClient/product";
 
 const HomePage = ({ navigation }) => {
   const [products, setProducts] = useState([]);
-
-  const getProducts = async () => {
-    const res = await fetch("http://192.168.168.120:3001/api/v1/products").then(
-      (res) => res.json()
-    );
-
+  const handleGetProducts = async () => {
+    const res = await getProducts();
     if (res.status === 200) {
       setProducts(res.payload);
     }
   };
 
   useEffect(() => {
-    getProducts();
+    handleGetProducts();
   }, []);
 
   return (

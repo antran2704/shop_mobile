@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { View, Dimensions, SafeAreaView, Image } from "react-native";
 import Carousel, { Pagination } from "react-native-snap-carousel";
+import { IP_ENDPOINT } from "../../../../env";
 
 const SliderImages = ({ images }) => {
   const sliderRef = useRef(null);
@@ -20,7 +21,7 @@ const SliderImages = ({ images }) => {
               style={{ height: 300 }}
               className="w-full object-contain"
               source={{
-                uri: item.replace("localhost", "192.168.168.120"),
+                uri: item.replace("http://localhost:3001", IP_ENDPOINT),
               }}
             />
           )}

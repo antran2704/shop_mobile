@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { View, Dimensions, SafeAreaView, Image } from "react-native";
 import Carousel, { Pagination } from "react-native-snap-carousel";
+import { getBanners } from "../../../apiClient/banner";
+import { IP_ENDPOINT } from "../../../../env";
 
 const data = [
   {
@@ -22,18 +24,16 @@ const Banner = () => {
   const [banners, setBanners] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const getBanners = async () => {
-    const res = await fetch("http://192.168.168.120:3001/api/v1/banners").then(
-      (res) => res.json()
-    );
-
+  const handleGetBanners = async () => {
+    const res = await getBanners();
+    console.log("res:::", res)
     if (res.status === 200) {
       setBanners(res.payload);
     }
   };
 
   useEffect(() => {
-    getBanners();
+    handleGetBanners();
   }, []);
 
   return (
@@ -49,7 +49,7 @@ const Banner = () => {
               style={{ height: 300 }}
               className="w-full object-contain"
               source={{
-                uri: item.image.replace("localhost", "192.168.168.120"),
+                uri: item.image.replace("http://localhost:3001", IP_ENDPOINT),
               }}
             />
           )}
