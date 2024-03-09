@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, Dimensions, SafeAreaView, Image } from "react-native";
 import Carousel, { Pagination } from "react-native-snap-carousel";
 
@@ -15,11 +15,26 @@ const data = [
   },
 ];
 
-const Banner = ({ navigation }) => {
+const Banner = () => {
   const bannerRef = useRef(null);
   const width = Dimensions.get("window").width;
 
+  const [banners, setBanners] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  const getBanners = async () => {
+    const res = await fetch("http://192.168.168.120:3001/api/v1/banners").then(
+      (res) => res.json()
+    );
+
+    if (res.status === 200) {
+      setBanners(res.payload);
+    }
+  };
+
+  useEffect(() => {
+    getBanners();
+  }, []);
 
   return (
     <SafeAreaView>
@@ -27,13 +42,14 @@ const Banner = ({ navigation }) => {
         <Carousel
           ref={bannerRef}
           layout={"default"}
-          data={data}
-          renderItem={({ item }) => (
+          data={banners}
+          renderItem={({ item, index }) => (
             <Image
+              key={index}
               style={{ height: 300 }}
               className="w-full object-contain"
               source={{
-                uri: item.image,
+                uri: item.image.replace("localhost", "192.168.168.120"),
               }}
             />
           )}

@@ -1,57 +1,21 @@
 import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import AboutPage from "../../pages/About";
-import HomeStackScreen from "../../View/HomeScreen";
-import CartPage from "../../pages/Cart";
+import ProductPage from "../../pages/Product";
+import MainTabScreen from "../../View/MainScreen";
 
-const Tab = createBottomTabNavigator();
-
+const NavbarStack = createNativeStackNavigator();
 const Navbar = () => {
   return (
     <NavigationContainer>
-      <Tab.Navigator screenOptions={{ headerShown: false }}>
-        <Tab.Screen
-          name="Home"
-          component={HomeStackScreen}
-          options={{
-            header: () => null,
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="home" color={color} size={size} />
-            ),
-          }}
+      <NavbarStack.Navigator>
+        <NavbarStack.Screen
+          name="Main Screen"
+          component={MainTabScreen}
+          options={{ header: () => null }}
         />
-
-        <Tab.Screen
-          name="About"
-          component={AboutPage}
-          initialParams={{ user: "test" }}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons
-                name="account"
-                color={color}
-                size={size}
-              />
-            ),
-          }}
-        />
-
-        <Tab.Screen
-          name="Cart"
-          component={CartPage}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons
-                name="cart"
-                color={color}
-                size={size}
-              />
-            ),
-          }}
-        />
-      </Tab.Navigator>
+        <NavbarStack.Screen name="Chi Tiết Sản Phẩm" component={ProductPage} />
+      </NavbarStack.Navigator>
     </NavigationContainer>
   );
 };

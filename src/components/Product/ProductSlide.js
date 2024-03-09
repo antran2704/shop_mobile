@@ -1,18 +1,7 @@
 import { FlatList, SafeAreaView, Text } from "react-native";
 import ProductItem from "./Item";
 
-const data = [
-  { id: 1, title: "product 12222222222222222222222222222222222222222222222" },
-  { id: 2, title: "product 2" },
-  { id: 3, title: "product 1" },
-  { id: 4, title: "product 2" },
-  { id: 5, title: "product 1" },
-  { id: 6, title: "product 2" },
-  { id: 7, title: "product 1" },
-  { id: 8, title: "product 2" },
-];
-
-const ProductSlide = ({navigation}) => {
+const ProductSlide = ({ navigation, data }) => {
   return (
     <SafeAreaView className="bg-white py-5 mt-5 rounded-xl">
       <Text className="text-base font-medium px-4 mb-2">Sản phẩm Hot</Text>
@@ -21,9 +10,11 @@ const ProductSlide = ({navigation}) => {
         horizontal={false}
         numColumns={2}
         data={data}
-        onEndReached={() => console.log("ping pong")}
+        onEndReached={() => {}}
         onEndReachedThreshold={0.8}
-        renderItem={({ item }) => <ProductItem data={item} navigation={navigation}/>}
+        renderItem={({ item }) => (
+          <ProductItem key={item._id} data={item} navigation={navigation} />
+        )}
         keyExtractor={(item) => item.id}
       />
     </SafeAreaView>

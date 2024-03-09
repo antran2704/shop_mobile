@@ -2,23 +2,9 @@ import { useRef, useState } from "react";
 import { View, Dimensions, SafeAreaView, Image } from "react-native";
 import Carousel, { Pagination } from "react-native-snap-carousel";
 
-const data = [
-  {
-    id: 1,
-    image:
-      "https://images.unsplash.com/photo-1707343848610-16f9afe1ae23?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 2,
-    image:
-      "https://images.unsplash.com/photo-1709626011483-5bb4b5470ac9?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-];
-
-const SliderImages = () => {
+const SliderImages = ({ images }) => {
   const sliderRef = useRef(null);
   const width = Dimensions.get("window").width;
-
   const [currentSlide, setCurrentSlide] = useState(0);
 
   return (
@@ -27,13 +13,14 @@ const SliderImages = () => {
         <Carousel
           ref={sliderRef}
           layout={"default"}
-          data={data}
-          renderItem={({ item }) => (
+          data={images}
+          renderItem={({ item, index }) => (
             <Image
+              key={index}
               style={{ height: 300 }}
               className="w-full object-contain"
               source={{
-                uri: item.image,
+                uri: item.replace("localhost", "192.168.168.120"),
               }}
             />
           )}
@@ -45,7 +32,7 @@ const SliderImages = () => {
 
         <View className="absolute bottom-0 left-1/3">
           <Pagination
-            dotsLength={data.length}
+            dotsLength={images.length}
             activeDotIndex={currentSlide}
             inactiveDotOpacity={0.4}
             inactiveDotScale={0.6}
