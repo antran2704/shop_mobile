@@ -1,5 +1,6 @@
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { formatBigNumber } from "../../helpers/number/fomatterCurrency";
+import { IP_ENDPOINT } from "../../../env.js";
 
 const ProductItem = ({ navigation, data }) => {
   const onClickProduct = () => {
@@ -11,7 +12,7 @@ const ProductItem = ({ navigation, data }) => {
       <Image
         className="w-full h-[200px] object-contain rounded-md"
         source={{
-          uri: data.thumbnail.replace("localhost", "192.168.168.120"),
+          uri: data.thumbnail.replace("http://localhost:3001", IP_ENDPOINT),
         }}
       />
 

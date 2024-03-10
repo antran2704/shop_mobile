@@ -38,7 +38,7 @@ const MainTabScreen = () => {
         options={{
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cart" color={color} size={size} />
-          )
+          ),
         }}
       />
     </Tab.Navigator>

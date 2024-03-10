@@ -1,4 +1,6 @@
 import { View, SafeAreaView, ScrollView } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { Banner } from "../components/Slider";
 import ProductSlide from "../components/Product/ProductSlide";
 import { useEffect, useState } from "react";
@@ -13,12 +15,18 @@ const HomePage = ({ navigation }) => {
     }
   };
 
+  const getUser = async () => {
+    const accessToken = await AsyncStorage.getItem("accessToken");
+    console.log("accessToken::", accessToken);
+  };
+
   useEffect(() => {
     handleGetProducts();
+    getUser()
   }, []);
 
   return (
-    <ScrollView stickyHeaderHiddenOnScroll={true} scrollsToTop={true}>
+    <ScrollView>
       <Banner />
 
       <View>

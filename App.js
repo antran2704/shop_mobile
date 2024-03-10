@@ -1,13 +1,14 @@
-import { Text, View, StatusBar } from "react-native";
+import { StatusBar } from "react-native";
+import { ClerkProvider } from "@clerk/clerk-expo";
 import Navbar from "./src/components/Navbar";
 import { Fragment } from "react";
-import HomeStackScreen from "./src/View/MainScreen";
+import { CLERK_PUBLIC_KEY } from "./env";
 
 export default function App() {
   return (
-    <Fragment>
+    <ClerkProvider publishableKey={CLERK_PUBLIC_KEY}>
       <StatusBar />
       <Navbar />
-    </Fragment>
+    </ClerkProvider>
   );
 }
