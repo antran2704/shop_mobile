@@ -1,5 +1,6 @@
 {
   "expo": {
+    "scheme": "Shop2",
     "name": "shop2",
     "slug": "shop2",
     "version": "1.0.0",

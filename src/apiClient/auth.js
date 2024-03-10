@@ -16,12 +16,15 @@ const getUser = async (accessToken, publicKey) => {
 };
 
 const getUserByEmail = async (email) => {
-  return await httpInstance.post("/users/email", {
-    email,
-  });
+  return await httpInstance
+    .post("/users/email", {
+      email,
+    })
+    .then((res) => res.data);
 };
 
 const createUser = async (payload) => {
+  console.log("create new user");
   return await httpInstance.post("/users", payload).then((res) => res.data);
 };
 

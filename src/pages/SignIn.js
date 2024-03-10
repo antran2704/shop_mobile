@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import {
-  Button,
   Image,
   ImageBackground,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { useOAuth, useUser } from "@clerk/clerk-expo";
+import { useOAuth, useUser, useSignIn } from "@clerk/clerk-expo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Spinner from "react-native-loading-spinner-overlay";
 
 import { useWarmUpBrowser } from "../hooks/useWarmUpBrowser";
 import { createUser, getUserByEmail, login } from "../apiClient/auth";
@@ -24,12 +23,16 @@ const bgImage = {
 
 const SignInPage = ({ navigation }) => {
   useWarmUpBrowser();
-  const [emailAddress, setEmailAddress] = useState("");
   const googleOAuth = useOAuth({ strategy: "oauth_google" });
   const facebookOAuth = useOAuth({ strategy: "oauth_facebook" });
-  const [isLogin, setIsLogin] = useState(false);
-  const { user, isLoaded } = useUser();
-  console.log("user", user);
+  const { signIn, setActive } = useSignIn();
+  const { user } = useUser();
+
+  const [emailAddress, setEmailAddress] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState(null);
+
+  const [loading, setLoading] = useState(false);
 
   const handleSetAsyncStorage = async (
     accessToken,
@@ -43,77 +46,97 @@ const SignInPage = ({ navigation }) => {
     await AsyncStorage.setItem("apiKey", apiKey);
   };
 
-  const onLoginWithFacebook = async () => {
+  const onLoginWithEmail = async () => {
+    if (!emailAddress || !password) {
+      setMessage("Vui lòng nhập đầy đủ các trường");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const { createdSessionId, signIn } = await facebookOAuth.startOAuthFlow();
-      console.log("signIn:::", signIn);
-      console.log("signUp:::", signUp);
-      if (createdSessionId) {
-        // setActive({ session: createdSessionId });
+      const completedLogin = await signIn.create({ identifier: emailAddress });
+      console.log("completedLogin:::", completedLogin);
+
+      if (completedLogin.status === "complete") {
+        await setActive({ session: completedLogin.createdSessionId });
       } else {
-        // Use signIn or signUp for next steps such as MFA
+        setMessage("Tên đăng nhập hoặc mật khẩu sai");
       }
     } catch (err) {
-      console.error("OAuth error", err);
+      setMessage("Tên đăng nhập hoặc mật khẩu sai");
     }
+
+    setPassword("");
+    setLoading(false);
+  };
+
+  const onLoginWithFacebook = async () => {
+    setLoading(true);
+
+    try {
+      const { createdSessionId, setActive } =
+        await facebookOAuth.startOAuthFlow();
+
+      if (createdSessionId) {
+        setActive({ session: createdSessionId });
+      }
+    } catch (err) {
+      setMessage("Lỗi hệ thống, vui lòng thử lại");
+    }
+
+    setLoading(false);
   };
 
   const onLoginWithGoogle = async () => {
-    console.log("click");
+    setLoading(true);
     try {
-      const { createdSessionId, signIn, signUp, setActive } =
+      const { createdSessionId, setActive } =
         await googleOAuth.startOAuthFlow();
 
-      console.log("signIn:::", signIn);
-      //   console.log("signUp:::", signUp);
-
       if (createdSessionId) {
-        // setActive({ session: createdSessionId });
         setActive({ session: createdSessionId });
-        setIsLogin(true);
-      } else {
-        // Use signIn or signUp for next steps such as MFA
       }
     } catch (err) {
-      console.error("OAuth error", err);
+      setMessage("Lỗi hệ thống, vui lòng thử lại");
+    }
+
+    setLoading(false);
+  };
+
+  const handleLogin = async (email) => {
+    const resLogin = await login(email);
+
+    if (resLogin.status === 200) {
+      const { accessToken, refreshToken, publicKey, apiKey } = resLogin.payload;
+      await handleSetAsyncStorage(accessToken, refreshToken, publicKey, apiKey);
+      navigation.navigate("Main Screen");
     }
   };
 
   const handleCheckUser = async (email) => {
-    if (!user) return;
-
+    if (!email) return;
+    setLoading(true);
     const isExitUser = await getUserByEmail(email);
-
     if (isExitUser) {
-      const resLogin = await login(email);
+      await handleLogin(email);
+    } else {
+      const inforUser = {
+        email: user?.primaryEmailAddress?.emailAddress,
+        name: user?.fullName,
+        avartar: user?.imageUrl,
+      };
+      const newUser = await createUser(inforUser);
 
-      if (resLogin.status === 200) {
-        const { accessToken, refreshToken, publicKey, apiKey } =
-          resLogin.payload;
-        await handleSetAsyncStorage(
-          accessToken,
-          refreshToken,
-          publicKey,
-          apiKey
-        );
-        navigation.navigate("Main Screen");
+      if (newUser) {
+        await handleLogin(email);
       }
-      return;
     }
 
-    const inforUser = {
-      email: user?.primaryEmailAddress?.emailAddress,
-      name: user?.fullName,
-      avartar: user?.imageUrl,
-    };
-    const newUser = await createUser(inforUser);
-
-    if (newUser) {
-    }
+    setLoading(false);
   };
 
   useEffect(() => {
-    if (user?.id) {
+    if (user && user?.id) {
       const email = user?.primaryEmailAddress?.emailAddress;
       handleCheckUser(email);
     }
@@ -123,21 +146,44 @@ const SignInPage = ({ navigation }) => {
     <View>
       <ImageBackground
         source={bgImage}
-        className="min-h-screen flex-col py-5 px-2 items-center"
+        className="min-h-screen flex-col justify-center py-5 px-2 items-center"
       >
-        <Text className="text-xl font-medium text-center text-white">
-          Login Shop Antrandev
+        <Text className="text-2xl font-medium text-center text-white">
+          Đăng nhập Shop Antrandev
         </Text>
 
         <View className="w-full backdrop-blur-sm bg-white/30 mt-5 rounded-lg p-5">
-          <TextInput
-            autoCapitalize="none"
-            placeholder="Email..."
-            value={emailAddress}
-            className="bg-white py-2 px-4 rounded-md"
-            onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
-          />
-          <TouchableOpacity className="mt-3">
+          <View className="gap-y-3">
+            <TextInput
+              autoCapitalize="none"
+              placeholder="Email..."
+              value={emailAddress}
+              inputMode="email"
+              className="bg-white py-2 px-4 rounded-md"
+              onChangeText={(emailAddress) => {
+                if (message) {
+                  setMessage("");
+                }
+                setEmailAddress(emailAddress);
+              }}
+            />
+            <TextInput
+              autoCapitalize="none"
+              placeholder="Password..."
+              secureTextEntry={true}
+              value={password}
+              className="bg-white py-2 px-4 rounded-md"
+              onChangeText={(password) => {
+                if (message) {
+                  setMessage("");
+                }
+                setPassword(password);
+              }}
+            />
+
+            {message && <Text className="text-xs text-error">{message}</Text>}
+          </View>
+          <TouchableOpacity onPress={onLoginWithEmail} className="mt-3">
             <Text className="text-base text-center text-white font-medium bg-primary px-5 py-2 rounded-md border border-transparent">
               Đăng nhập
             </Text>
@@ -172,12 +218,21 @@ const SignInPage = ({ navigation }) => {
               Continue with Facebook
             </Text>
           </TouchableOpacity>
+
+          <View className="flex-row items-center mx-auto mt-3">
+            <Text className="text-sm">Bạn chưa có tài khoản?</Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("SignUp")}
+              className="px-2"
+            >
+              <Text className="text-sm text-primary font-medium">
+                Đăng ký ngay
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        {/* <Button
-              title="Sign in with Google"
-              onPress={onPress}
-            /> */}
       </ImageBackground>
+      <Spinner visible={loading} />
     </View>
   );
 };

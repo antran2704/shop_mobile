@@ -8,11 +8,15 @@ import { getProducts } from "../apiClient/product";
 
 const HomePage = ({ navigation }) => {
   const [products, setProducts] = useState([]);
+  const [loadingProduct, setLoadingProduct] = useState(true);
+
   const handleGetProducts = async () => {
     const res = await getProducts();
     if (res.status === 200) {
       setProducts(res.payload);
     }
+
+    setLoadingProduct(false);
   };
 
   const getUser = async () => {
@@ -22,7 +26,7 @@ const HomePage = ({ navigation }) => {
 
   useEffect(() => {
     handleGetProducts();
-    getUser()
+    getUser();
   }, []);
 
   return (
@@ -30,7 +34,11 @@ const HomePage = ({ navigation }) => {
       <Banner />
 
       <View>
-        <ProductSlide navigation={navigation} data={products} />
+        <ProductSlide
+          navigation={navigation}
+          data={products}
+          loading={loadingProduct}
+        />
       </View>
     </ScrollView>
   );

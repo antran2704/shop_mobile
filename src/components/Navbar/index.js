@@ -4,16 +4,22 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ProductPage from "../../pages/Product";
 import MainTabScreen from "../../View/MainScreen";
 import SignInPage from "../../pages/SignIn";
+import SignUpPage from "../../pages/SignUp";
 
 const NavbarStack = createNativeStackNavigator();
 const Navbar = () => {
   return (
     <NavigationContainer>
       <NavbarStack.Navigator>
-      <NavbarStack.Screen
+        <NavbarStack.Screen
           name="SignIn"
           options={{ header: () => null }}
           component={SignInPage}
+        />
+        <NavbarStack.Screen
+          name="SignUp"
+          options={{ header: () => null }}
+          component={SignUpPage}
         />
         <NavbarStack.Screen
           name="Main Screen"
