@@ -19,14 +19,8 @@ const HomePage = ({ navigation }) => {
     setLoadingProduct(false);
   };
 
-  const getUser = async () => {
-    const accessToken = await AsyncStorage.getItem("accessToken");
-    console.log("accessToken::", accessToken);
-  };
-
   useEffect(() => {
     handleGetProducts();
-    getUser();
   }, []);
 
   return (

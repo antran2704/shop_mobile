@@ -13,7 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Spinner from "react-native-loading-spinner-overlay";
 
 import { useWarmUpBrowser } from "../hooks/useWarmUpBrowser";
-import { createUser, getUserByEmail, login } from "../apiClient/auth";
+import { createUser, getUserByEmail, handleSetAsyncStorage, login } from "../apiClient/auth";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -35,18 +35,6 @@ const SignUpPage = ({ navigation }) => {
 
   const [verifying, setVerifying] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const handleSetAsyncStorage = async (
-    accessToken,
-    refreshToken,
-    publicKey,
-    apiKey
-  ) => {
-    await AsyncStorage.setItem("accessToken", accessToken.value);
-    await AsyncStorage.setItem("refreshToken", refreshToken.value);
-    await AsyncStorage.setItem("publicKey", publicKey);
-    await AsyncStorage.setItem("apiKey", apiKey);
-  };
 
   const onSignUp = async () => {
     if (!emailAddress || !password) {
@@ -151,7 +139,7 @@ const SignUpPage = ({ navigation }) => {
 
     if (resLogin.status === 200) {
       const { accessToken, refreshToken, publicKey, apiKey } = resLogin.payload;
-      await handleSetAsyncStorage(accessToken, refreshToken, publicKey, apiKey);
+      await handleSetAsyncStorage(AsyncStorage, accessToken.value, refreshToken.value, publicKey, apiKey);
       navigation.navigate("Main Screen");
     }
   };

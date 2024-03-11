@@ -11,14 +11,10 @@ const ProductSlide = ({ navigation, data, loading }) => {
           horizontal={false}
           numColumns={2}
           data={[1, 2, 3, 4]}
-          renderItem={({ item }) => (
-            <ProductItemLoading key={item}/>
-          )}
-          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <ProductItemLoading key={item} />}
         />
       )}
 
-     
       {!loading && (
         <FlatList
           horizontal={false}
@@ -29,7 +25,6 @@ const ProductSlide = ({ navigation, data, loading }) => {
           renderItem={({ item }) => (
             <ProductItem key={item._id} data={item} navigation={navigation} />
           )}
-          keyExtractor={(item) => item.id}
         />
       )}
     </SafeAreaView>

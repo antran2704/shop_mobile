@@ -26,7 +26,6 @@ const Banner = () => {
 
   const handleGetBanners = async () => {
     const res = await getBanners();
-    console.log("res:::", res)
     if (res.status === 200) {
       setBanners(res.payload);
     }

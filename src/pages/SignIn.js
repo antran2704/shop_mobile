@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import {
   Image,
@@ -13,7 +13,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Spinner from "react-native-loading-spinner-overlay";
 
 import { useWarmUpBrowser } from "../hooks/useWarmUpBrowser";
-import { createUser, getUserByEmail, login } from "../apiClient/auth";
+import {
+  createUser,
+  getUser,
+  getUserByEmail,
+  handleSetAsyncStorage,
+  login,
+} from "../apiClient/auth";
+import { UserContext } from "../View/StackScreen";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -23,28 +30,17 @@ const bgImage = {
 
 const SignInPage = ({ navigation }) => {
   useWarmUpBrowser();
+  const { setInfor } = useContext(UserContext);
+
   const googleOAuth = useOAuth({ strategy: "oauth_google" });
   const facebookOAuth = useOAuth({ strategy: "oauth_facebook" });
   const { signIn, setActive } = useSignIn();
   const { user } = useUser();
-
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState(null);
 
   const [loading, setLoading] = useState(false);
-
-  const handleSetAsyncStorage = async (
-    accessToken,
-    refreshToken,
-    publicKey,
-    apiKey
-  ) => {
-    await AsyncStorage.setItem("accessToken", accessToken.value);
-    await AsyncStorage.setItem("refreshToken", refreshToken.value);
-    await AsyncStorage.setItem("publicKey", publicKey);
-    await AsyncStorage.setItem("apiKey", apiKey);
-  };
 
   const onLoginWithEmail = async () => {
     if (!emailAddress || !password) {
@@ -105,10 +101,22 @@ const SignInPage = ({ navigation }) => {
 
   const handleLogin = async (email) => {
     const resLogin = await login(email);
-
+    console.log("resLogin:::", resLogin);
     if (resLogin.status === 200) {
       const { accessToken, refreshToken, publicKey, apiKey } = resLogin.payload;
-      await handleSetAsyncStorage(accessToken, refreshToken, publicKey, apiKey);
+      await handleSetAsyncStorage(
+        AsyncStorage,
+        accessToken.value,
+        refreshToken.value,
+        publicKey,
+        apiKey
+      );
+
+      const userRes = await getUser(AsyncStorage);
+      console.log("userRes:::", userRes);
+      if (userRes.status === 200) {
+        setInfor(userRes.payload);
+      }
       navigation.navigate("Main Screen");
     }
   };
