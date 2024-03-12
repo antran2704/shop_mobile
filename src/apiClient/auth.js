@@ -1,9 +1,13 @@
 import httpInstance from "../config/axios";
 
 const login = async (email) => {
-  return await httpInstance
-    .post("/users/login", { email })
-    .then((res) => res.data);
+  try {
+    return await httpInstance
+      .post("/users/login", { email })
+      .then((res) => res.data);
+  } catch (error) {
+    console.log("login", error);
+  }
 };
 
 const logout = async (AsyncStorage) => {
@@ -26,16 +30,15 @@ const handleSetAsyncStorage = async (
   await AsyncStorage.setItem("apiKey", apiKey);
 };
 
-const getUser = async (AsyncStorage) => {
-  const accessToken = await AsyncStorage.getItem("accessToken");
-  const publicKey = await AsyncStorage.getItem("publicKey");
-  
-  return await httpInstance.get("/users", {
-    headers: {
-      Authorization: `Bear ${accessToken}`,
-      "public-key": `Key ${publicKey}`,
-    },
-  }).then(res => res.data);
+const getUser = async () => {
+  console.log("call api user")
+  try {
+    return await httpInstance
+      .get("/users")
+      .then((res) => res.data);
+  } catch (error) {
+    console.log("getUser_error", error);
+  }
 };
 
 const getUserByEmail = async (email) => {
@@ -51,14 +54,14 @@ const createUser = async (payload) => {
   return await httpInstance.post("/users", payload).then((res) => res.data);
 };
 
-const getRefreshToken = async (AsyncStorage) => {
-  const refreshToken = await AsyncStorage.getItem("refreshToken");
-
-  return await httpInstance.get("/users/refreshToken", {
-    headers: {
-      "refresh-token": `Key ${refreshToken}`,
-    },
-  });
+const getRefreshToken = async () => {
+  try {
+    return await httpInstance
+      .get("/users/refreshToken")
+      .then((res) => res.data);
+  } catch (error) {
+    console.log("resfesh_error", error);
+  }
 };
 
 export {

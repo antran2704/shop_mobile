@@ -8,8 +8,16 @@ import SignInPage from "../pages/SignIn";
 import SignUpPage from "../pages/SignUp";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { createContext, useEffect, useState } from "react";
-import { getUser, logout } from "../apiClient/auth";
+import {
+  createUser,
+  getUser,
+  getUserByEmail,
+  handleSetAsyncStorage,
+  login,
+  logout,
+} from "../apiClient/auth";
 import { injectRouter } from "../config/axios";
+import Spinner from "react-native-loading-spinner-overlay";
 
 const initInforUser = {
   _id: null,
@@ -26,21 +34,69 @@ const StackScreen = () => {
   const { signOut } = useAuth();
   const [infor, setInfor] = useState(initInforUser);
 
-  console.log("user-home:::", user);
+  const [loading, setLoading] = useState(false);
+
+  // console.log("user:::", user);
   console.log("infor:::", infor);
 
+  const handleLogin = async (email) => {
+    const resLogin = await login(email);
+    if (resLogin.status === 200) {
+      const { accessToken, refreshToken, publicKey, apiKey } = resLogin.payload;
+      await handleSetAsyncStorage(
+        AsyncStorage,
+        accessToken.value,
+        refreshToken.value,
+        publicKey,
+        apiKey
+      );
+    }
+  };
+
   const handleGetUser = async () => {
-    const userRes = await getUser(AsyncStorage);
+    const userRes = await getUser();
     if (userRes.status === 200) {
       setInfor(userRes.payload);
     }
   };
 
+  const handleCheckUser = async (email) => {
+    setLoading(true);
+
+    try {
+      const refreshToken = await AsyncStorage.getItem("refreshToken");
+      console.log("refeshtoken::", refreshToken);
+      if (!refreshToken) {
+        const isExitUser = await getUserByEmail(email);
+        if (isExitUser) {
+          await handleLogin(email);
+        } else {
+          const inforUser = {
+            email: user?.primaryEmailAddress?.emailAddress,
+            name: user?.fullName,
+            avartar: user?.imageUrl,
+          };
+          const newUser = await createUser(inforUser);
+
+          if (newUser) {
+            await handleLogin(email);
+          }
+        }
+      }
+      await handleGetUser();
+    } catch (error) {
+      console.log("error", error)
+    }
+
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (user && user.id) {
-      handleGetUser();
+      const email = user?.primaryEmailAddress?.emailAddress;
+      handleCheckUser(email);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     injectRouter(signOut, AsyncStorage);
@@ -51,7 +107,7 @@ const StackScreen = () => {
       <NavigationContainer>
         <stack.Navigator>
           <stack.Screen
-            name="Main Screen"
+            name="Home_Screen"
             component={MainTabScreen}
             options={{ header: () => null }}
           />
@@ -63,16 +119,17 @@ const StackScreen = () => {
           />
           <stack.Screen
             name="SignIn"
-            options={{ header: () => null }}
+            options={{ headerTitle: "Đăng nhập" }}
             component={SignInPage}
           />
           <stack.Screen
             name="SignUp"
-            options={{ header: () => null }}
+            options={{ headerTitle: "Đăng ký" }}
             component={SignUpPage}
           />
         </stack.Navigator>
       </NavigationContainer>
+      <Spinner visible={loading} />
     </UserContext.Provider>
   );
 };

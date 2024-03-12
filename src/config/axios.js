@@ -12,13 +12,32 @@ const handleLogout = () => {
   isRefresh = false;
   logout(AsyncStorage);
   signOutClerk();
-  console.log("logout aixos")
+  console.log("logout aixos");
 };
 
 export const injectRouter = (_signOutClerk, _AsyncStorage) => {
   signOutClerk = _signOutClerk;
   AsyncStorage = _AsyncStorage;
 };
+
+httpInstance.interceptors.request.use(
+  async (config) => {
+    // Do something before request is sent
+    const accessToken = await AsyncStorage.getItem("accessToken");
+    const refreshToken = await AsyncStorage.getItem("refreshToken");
+    const publicKey = await AsyncStorage.getItem("publicKey");
+    // const apiKey = await AsyncStorage.getItem("apiKey");
+
+    config.headers.Authorization = `Bearer ${accessToken}`;
+    config.headers["refresh-token"] = `Key ${refreshToken}`;
+    config.headers["public-key"] = `Key ${publicKey}`;
+    return config;
+  },
+  (error) => {
+    // Do something with request error
+    return Promise.reject(error);
+  }
+);
 
 httpInstance.interceptors.response.use(
   function (response) {
@@ -62,12 +81,13 @@ httpInstance.interceptors.response.use(
       if (!isRefresh && !originalRequest._retry) {
         isRefresh = true;
 
-        const { status } = await getRefreshToken(AsyncStorage);
+        const { status, payload } = await getRefreshToken();
         if (status === 200) {
           isRefresh = false;
-
+          await AsyncStorage.setItem("accessToken", payload.newAccessToken);
           originalRequest._retry = true;
-          return Promise.resolve(http(originalRequest));
+          console.log("refeshtoken_res1", payload, originalRequest);
+          return Promise.resolve(httpInstance(originalRequest));
         }
       } else {
         handleLogout();

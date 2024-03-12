@@ -1,4 +1,4 @@
-const IP_ENDPOINT = "http://192.168.1.4:3001";
+const IP_ENDPOINT = "http://192.168.1.28:3001";
 const CLERK_PUBLIC_KEY =
   "pk_test_ZmFjdHVhbC1hbGJhY29yZS02MS5jbGVyay5hY2NvdW50cy5kZXYk";
 export { IP_ENDPOINT, CLERK_PUBLIC_KEY };
