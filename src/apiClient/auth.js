@@ -1,13 +1,9 @@
 import httpInstance from "../config/axios";
 
 const login = async (email) => {
-  try {
-    return await httpInstance
-      .post("/users/login", { email })
-      .then((res) => res.data);
-  } catch (error) {
-    console.log("login", error);
-  }
+  return await httpInstance
+    .post("/users/login", { email })
+    .then((res) => res.data);
 };
 
 const logout = async (AsyncStorage) => {
@@ -31,14 +27,7 @@ const handleSetAsyncStorage = async (
 };
 
 const getUser = async () => {
-  console.log("call api user")
-  try {
-    return await httpInstance
-      .get("/users")
-      .then((res) => res.data);
-  } catch (error) {
-    console.log("getUser_error", error);
-  }
+  return await httpInstance.get("/users").then((res) => res.data);
 };
 
 const getUserByEmail = async (email) => {
@@ -55,13 +44,7 @@ const createUser = async (payload) => {
 };
 
 const getRefreshToken = async () => {
-  try {
-    return await httpInstance
-      .get("/users/refreshToken")
-      .then((res) => res.data);
-  } catch (error) {
-    console.log("resfesh_error", error);
-  }
+  return await httpInstance.get("/users/refreshToken").then((res) => res.data);
 };
 
 export {

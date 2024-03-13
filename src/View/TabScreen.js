@@ -13,6 +13,28 @@ const TabScreen = () => {
   return (
     <Tab.Navigator screenOptions={{ tabBarActiveTintColor: "#f8796c" }}>
       <Tab.Screen
+        name="Home"
+        component={HomePage}
+        options={{
+          header: () => null,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="home" color={color} size={size} />
+          ),
+        }}
+      />
+      {/* {user && user.id && ( */}
+      <Tab.Screen
+        name="Cart"
+        component={CartPage}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="cart" color={color} size={size} />
+          ),
+        }}
+      />
+      {/* )} */}
+
+      <Tab.Screen
         name="User"
         component={UserPage}
         initialParams={{ user: "test" }}
@@ -23,29 +45,6 @@ const TabScreen = () => {
           ),
         }}
       />
-
-      <Tab.Screen
-        name="Home"
-        component={HomePage}
-        options={{
-          header: () => null,
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home" color={color} size={size} />
-          ),
-        }}
-      />
-
-      {user && user.id && (
-        <Tab.Screen
-          name="Cart"
-          component={CartPage}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="cart" color={color} size={size} />
-            ),
-          }}
-        />
-      )}
     </Tab.Navigator>
   );
 };

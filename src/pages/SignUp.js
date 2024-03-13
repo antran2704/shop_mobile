@@ -1,10 +1,11 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useCallback, useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useOAuth, useUser, useSignUp } from "@clerk/clerk-expo";
 import Spinner from "react-native-loading-spinner-overlay";
 
 import { useWarmUpBrowser } from "../hooks/useWarmUpBrowser";
+import { InputEmailField, InputPasswordField } from "../components/InputField";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -24,13 +25,44 @@ const SignUpPage = ({ navigation }) => {
   const [verifying, setVerifying] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const onChangeEmail = useCallback(
+    (email) => {
+      if (message) {
+        setMessage("");
+      }
+      setEmailAddress(email);
+    },
+    [message, emailAddress]
+  );
+
+  const onChangePassword = useCallback(
+    (password) => {
+      if (message) {
+        setMessage("");
+      }
+      setPassword(password);
+    },
+    [message, password]
+  );
+
+  const onChangeConfirmPassword = useCallback(
+    (password) => {
+      if (message) {
+        setMessage("");
+      }
+      setConfirmPassword(password);
+    },
+    [message, confirmPassword]
+  );
+
+
   const onSignUp = async () => {
     if (!emailAddress || !password || !confirmPassword) {
       setMessage("Vui lòng nhập đầy đủ các trường");
       return;
     }
 
-    if(confirmPassword !== password) {
+    if (confirmPassword !== password) {
       setMessage("Mật khẩu xác nhận không chính xác");
       return;
     }
@@ -140,57 +172,27 @@ const SignUpPage = ({ navigation }) => {
         {!verifying && (
           <Fragment>
             <View className="gap-y-3">
-              <View>
-                <Text className="text-sm mb-2">Email</Text>
-                <TextInput
-                  autoCapitalize="none"
-                  placeholder="Email..."
-                  value={emailAddress}
-                  inputMode="email"
-                  className="bg-white py-2 px-4 rounded-md"
-                  onChangeText={(emailAddress) => {
-                    if (message) {
-                      setMessage("");
-                    }
-                    setEmailAddress(emailAddress);
-                  }}
-                />
-              </View>
-              <View>
-                <Text className="text-sm mb-2">Password</Text>
+              <InputEmailField
+                title="Email"
+                placeholder="Email..."
+                value={emailAddress}
+                onChangeText={onChangeEmail}
+              />
+              <InputPasswordField
+                title="Password"
+                placeholder="Password..."
+                styles="mt-3"
+                value={password}
+                onChangeText={onChangePassword}
+              />
 
-                <TextInput
-                  autoCapitalize="none"
-                  placeholder="Password..."
-                  secureTextEntry={true}
-                  value={password}
-                  className="bg-white py-2 px-4 rounded-md"
-                  onChangeText={(password) => {
-                    if (message) {
-                      setMessage("");
-                    }
-                    setPassword(password);
-                  }}
-                />
-              </View>
-
-              <View>
-                <Text className="text-sm mb-2">Confirm Password</Text>
-
-                <TextInput
-                  autoCapitalize="none"
-                  placeholder="Confirm Password..."
-                  secureTextEntry={true}
-                  value={confirmPassword}
-                  className="bg-white py-2 px-4 rounded-md"
-                  onChangeText={(confirmPassword) => {
-                    if (message) {
-                      setMessage("");
-                    }
-                    setConfirmPassword(confirmPassword);
-                  }}
-                />
-              </View>
+              <InputPasswordField
+                title="Confirm Password"
+                placeholder="Confirm Password..."
+                styles="mt-3"
+                value={confirmPassword}
+                onChangeText={onChangeConfirmPassword}
+              />
 
               {message && <Text className="text-xs text-error">{message}</Text>}
             </View>

@@ -1,16 +1,11 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import * as WebBrowser from "expo-web-browser";
-import {
-  Image,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useOAuth, useUser, useSignIn } from "@clerk/clerk-expo";
 import Spinner from "react-native-loading-spinner-overlay";
 
 import { useWarmUpBrowser } from "../hooks/useWarmUpBrowser";
+import { InputEmailField, InputPasswordField } from "../components/InputField";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -25,6 +20,26 @@ const SignInPage = ({ navigation }) => {
   const [message, setMessage] = useState(null);
 
   const [loading, setLoading] = useState(false);
+
+  const onChangeEmail = useCallback(
+    (email) => {
+      if (message) {
+        setMessage("");
+      }
+      setEmailAddress(email);
+    },
+    [message, emailAddress]
+  );
+
+  const onChangePassword = useCallback(
+    (password) => {
+      if (message) {
+        setMessage("");
+      }
+      setPassword(password);
+    },
+    [message, password]
+  );
 
   const onLoginWithEmail = async () => {
     if (!emailAddress || !password) {
@@ -93,38 +108,19 @@ const SignInPage = ({ navigation }) => {
 
       <View className="w-full mt-5 rounded-lg p-5">
         <View className="gap-y-3">
-          <View>
-            <Text className="text-sm mb-2">Email</Text>
-            <TextInput
-              autoCapitalize="none"
-              placeholder="Email..."
-              value={emailAddress}
-              inputMode="email"
-              className="bg-white py-2 px-4 rounded-md"
-              onChangeText={(emailAddress) => {
-                if (message) {
-                  setMessage("");
-                }
-                setEmailAddress(emailAddress);
-              }}
-            />
-          </View>
-          <View>
-            <Text className="text-sm mb-2">Password</Text>
-            <TextInput
-              autoCapitalize="none"
-              placeholder="Password..."
-              secureTextEntry={true}
-              value={password}
-              className="bg-white py-2 px-4 rounded-md"
-              onChangeText={(password) => {
-                if (message) {
-                  setMessage("");
-                }
-                setPassword(password);
-              }}
-            />
-          </View>
+          <InputEmailField
+            title="Email"
+            placeholder="Email..."
+            value={emailAddress}
+            onChangeText={onChangeEmail}
+          />
+          <InputPasswordField
+            title="Password"
+            placeholder="Password..."
+            styles="mt-3"
+            value={password}
+            onChangeText={onChangePassword}
+          />
 
           {message && <Text className="text-xs text-error">{message}</Text>}
         </View>

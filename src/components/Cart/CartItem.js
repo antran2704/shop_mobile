@@ -1,22 +1,48 @@
 import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { formatBigNumber } from "../../helpers/number/fomatterCurrency";
+import { IP_ENDPOINT } from "../../../env";
+import ProductQuantity from "../ProductQuantity";
+import { useEffect, useState } from "react";
+import useDebounce from "../../hooks/useDebounce";
 
-const CartItem = ({ navigation }) => {
+const CartItem = ({ navigation, data, onUpdate, onDelete }) => {
+  const [totalProduct, setTotalProduct] = useState(0);
+  const [inventory] = useState(
+    data.variation ? data.variation.inventory : data.product.inventory
+  );
+  const total = useDebounce(totalProduct.toString(), 1000);
+  console.log("total", total);
   const onClickProduct = () => {
-    navigation.navigate("Product");
+    navigation.navigate("Product", { product_slug: data.product.slug });
   };
 
   const onShowModal = () => {
-    Alert.alert("Xác nhận", "Bạn có muốn xóa sản phẩm ra khỏi giỏ hàng", [
-      {
-        text: "Hủy",
-        onPress: () => console.log("Cancel Pressed"),
-        style: "cancel",
-      },
-      { text: "Xóa", onPress: () => console.log("OK Pressed") },
-    ]);
+    const title = data.variation ? data.variation.title : data.product.title;
+
+    Alert.alert(
+      "Xác nhận",
+      `Bạn có muốn xóa sản phẩm ${title} ra khỏi giỏ hàng`,
+      [
+        {
+          text: "Hủy",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },
+        { text: "Xóa", onPress: () => onDelete(data) },
+      ]
+    );
   };
+
+  useEffect(() => {
+    if (totalProduct > 0 && totalProduct !== data.quantity) {
+      onUpdate(data, total);
+    }
+  }, [total]);
+
+  useEffect(() => {
+    setTotalProduct(data.quantity);
+  }, [data]);
 
   return (
     <View className="flex-row items-center justify-between w-full p-5 mb-5 bg-white rounded-md">
@@ -24,7 +50,10 @@ const CartItem = ({ navigation }) => {
         <Image
           className="w-20 h-20 object-contain rounded-md"
           source={{
-            uri: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=1905&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            uri: data.product.thumbnail.replace(
+              "http://localhost:3001",
+              IP_ENDPOINT
+            ),
           }}
         />
 
@@ -33,17 +62,22 @@ const CartItem = ({ navigation }) => {
             className="text-sm hover:text-primary max-w-[200px]"
             numberOfLines={2}
           >
-            {/* {data.product.title} */}A wrapper for making views respond
-            properly to touches. On press down, the opacity of the wrapped view
-            is decreased, dimming it. Opacity is controlled by wrapping the
-            children in an Animated.View, which is added to the view hierarchy.
-            Be aware that this can affect layout.
+            {data.variation ? data.variation.title : data.product.title}
           </Text>
-          <Text className="w-full text-xs pt-2">S / M</Text>
           <Text className="w-full text-sm pt-2">
-            1 X {formatBigNumber(100000)}
+            {data.quantity} X{" "}
+            {data.product.promotion_price > 0
+              ? formatBigNumber(data.product.promotion_price)
+              : formatBigNumber(data.product.price)}
             {" VND"}
           </Text>
+          <View className="mt-2">
+            <ProductQuantity
+              max={inventory}
+              setTotalProduct={setTotalProduct}
+              total={totalProduct}
+            />
+          </View>
         </View>
       </TouchableOpacity>
       <View>

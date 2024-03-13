@@ -44,6 +44,8 @@ httpInstance.interceptors.response.use(
     return response;
   },
   async (error) => {
+    console.log("error", error)
+
     if (error.code === "ERR_NETWORK") {
       console.log("Please check your network");
       return Promise.reject(error);

@@ -1,12 +1,25 @@
-import { Button, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Button,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { SliderImages } from "../components/Slider";
-import { useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { formatBigNumber } from "../helpers/number/fomatterCurrency";
 import { getProduct, getVariations } from "../apiClient/product";
+import { UserContext } from "../View/StackScreen";
+import { useUser } from "@clerk/clerk-expo";
+import { increaseCart } from "../apiClient/cart";
+import ProductQuantity from "../components/ProductQuantity";
 
-const ProductPage = ({ route }) => {
+const ProductPage = ({ route, navigation }) => {
   const { product_slug } = route.params;
+  const { infor } = useContext(UserContext);
+  const { user } = useUser();
 
   const [totalProduct, setTotalProduct] = useState(1);
   const [inventory, setInventory] = useState(0);
@@ -14,6 +27,8 @@ const ProductPage = ({ route }) => {
   const [product, setProduct] = useState(null);
   const [variations, setVariations] = useState([]);
   const [variation, setVariation] = useState(null);
+
+  const [message, setMessage] = useState(null);
 
   const [selectOption, setSelectOption] = useState({});
   const onSelectOption = (key, value) => {
@@ -42,6 +57,7 @@ const ProductPage = ({ route }) => {
 
     if (keys.length < product.options.length) {
       setVariation(null);
+      setTotalProduct(1);
       setInventory(product.inventory);
       return;
     }
@@ -54,6 +70,7 @@ const ProductPage = ({ route }) => {
 
     if (item) {
       setVariation(item);
+      setTotalProduct(1);
       setInventory(item.inventory);
     }
   };
@@ -65,6 +82,80 @@ const ProductPage = ({ route }) => {
       setVariations(res.payload);
     }
   };
+
+  const onShowModalLogin = () => {
+    Alert.alert("Thông báo", "Bạn cần phải đăng nhập", [
+      {
+        text: "Hủy",
+        onPress: () => console.log("Cancel Pressed"),
+        style: "cancel",
+      },
+      { text: "Đăng nhập", onPress: () => navigation.navigate("SignIn") },
+    ]);
+  };
+
+  const onShowModal = (content) => {
+    Alert.alert("Thông báo", content, [
+      {
+        text: "Đóng",
+        onPress: () => console.log("Cancel Pressed"),
+        style: "cancel",
+      },
+    ]);
+  };
+
+  const hanldeAddCart = useCallback(async () => {
+    console.log("add cart", user, infor._id);
+    if (!user || !infor._id) {
+      onShowModalLogin();
+      return;
+    }
+
+    const keysSelect = Object.keys(selectOption);
+
+    if (keysSelect.length !== product.options.length) {
+      setMessage("Please select options");
+      return;
+    }
+
+    let data = {};
+
+    if (variation) {
+      data = {
+        product_id: variation.product_id,
+        variation_id: variation._id,
+        quantity: totalProduct,
+      };
+    } else {
+      data = {
+        product_id: product._id,
+        variation_id: null,
+        quantity: totalProduct,
+      };
+    }
+
+    try {
+      const { status, payload } = await increaseCart(infor._id, data);
+      console.log(payload);
+      if (status === 201) {
+        onShowModal("Thêm thành công");
+      }
+    } catch (error) {
+      console.log(error);
+      if (!error.response) return;
+
+      const res = error.response;
+
+      if (
+        res.status === 400 &&
+        res.data.message === "Quantity order bigger than inventory"
+      ) {
+        onShowModal(
+          "Bạn đã có sản phẩm này trong giỏ hàng, không thể thêm số lượng"
+        );
+      }
+    }
+  }, [selectOption, user, infor, totalProduct, variation]);
 
   useEffect(() => {
     if (product_slug) {
@@ -146,12 +237,26 @@ const ProductPage = ({ route }) => {
             </View>
           ))}
 
-          <View className="pb-2">
+          <View className="flex-row items-center justify-between pb-2">
+            {inventory > 0 && (
+              <ProductQuantity
+                max={inventory}
+                setTotalProduct={setTotalProduct}
+                total={totalProduct}
+              />
+            )}
             <Text className="text-base font-medium">
               Đã bán: {formatBigNumber(product.sold)}
             </Text>
           </View>
 
+          <View className="w-full flex-row items-center justify-center">
+            {/* <ProductQuantity
+              max={inventory}
+              setTotalProduct={setTotalProduct}
+              total={totalProduct}
+            /> */}
+          </View>
           {inventory > 0 && (
             <View className="py-5 gap-2">
               <TouchableOpacity>
@@ -159,13 +264,18 @@ const ProductPage = ({ route }) => {
                   Mua Ngay
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity className="flex-row items-center justify-center border border-primary px-5 py-2 rounded-md">
+              <TouchableOpacity
+                onPress={() => hanldeAddCart()}
+                className="flex-row items-center justify-center border border-primary px-5 py-2 rounded-md"
+              >
                 <MaterialCommunityIcons
                   name="cart"
                   size={16}
                   color={"#f8796c"}
                 />
-                <Text className="text-base text-primary pl-2">Mua Ngay</Text>
+                <Text className="text-base text-primary pl-2">
+                  Thêm vào giỏ hàng
+                </Text>
               </TouchableOpacity>
             </View>
           )}
@@ -182,13 +292,7 @@ const ProductPage = ({ route }) => {
 
           <View className="py-2">
             <Text className="text-base font-medium">Description</Text>
-            <Text className="text-xs text-justify">
-              You might want to save the user's location in the app, so that
-              they are immediately returned to the same location after the app
-              is restarted. This is especially valuable during development
-              because it allows the developer to stay on the same screen when
-              they refresh the app.
-            </Text>
+            <Text className="text-xs text-justify">{product.description}</Text>
           </View>
         </View>
       )}
