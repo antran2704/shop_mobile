@@ -19,7 +19,7 @@ const UserPage = ({ route, navigation }) => {
 
     await signOut();
     await logout(AsyncStorage);
-    
+
     setLoading(false);
   };
 
@@ -52,7 +52,10 @@ const UserPage = ({ route, navigation }) => {
             <MaterialCommunityIcons name="cart" size={20} />
             <Text className="text-lg">Giỏ hàng</Text>
           </TouchableOpacity>
-          <TouchableOpacity className="flex-row items-center px-5 py-4 gap-x-5">
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Orders")}
+            className="flex-row items-center px-5 py-4 gap-x-5"
+          >
             <MaterialCommunityIcons name="clipboard-text-outline" size={20} />
             <Text className="text-lg">Đơn hàng của bạn</Text>
           </TouchableOpacity>

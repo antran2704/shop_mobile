@@ -1,41 +1,39 @@
 import {
+  FlatList,
   View,
-  SafeAreaView,
-  ScrollView,
   Text,
   TouchableOpacity,
-  Image,
-  FlatList,
-  Modal,
-  Alert,
-  Pressable,
+  ScrollView,
+  RefreshControl,
 } from "react-native";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-import { formatBigNumber } from "../helpers/number/fomatterCurrency";
 import CartItem from "../components/Cart/CartItem";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../View/StackScreen";
 import { deleteItemCart, getCart, updateCart } from "../apiClient/cart";
-
-const ID = "65b68c534aeec67d1fcf1720";
+import CartItemLoading from "../components/Cart/CartItemLoading";
 
 const CartPage = ({ navigation }) => {
   const { infor } = useContext(UserContext);
-  const [modalVisible, setModalVisible] = useState(false);
 
   const [cart, setCart] = useState(null);
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleGetCart = async () => {
+    setLoading(true);
     try {
       const res = await getCart(infor._id);
 
       if (res.status === 200) {
         setCart(res.payload);
+        setCartItems(res.payload.cart_products);
       }
     } catch (error) {
       console.log(error);
     }
+    setLoading(false);
   };
 
   const handeDeleteItem = async (data) => {
@@ -49,8 +47,8 @@ const CartPage = ({ navigation }) => {
       const { status, payload } = await deleteItemCart(infor._id, dataSend);
 
       if (status === 201) {
-        // handleGetCart();
         setCart(payload);
+        setCartItems(res.payload.cart_products);
       }
     } catch (error) {
       console.log(error);
@@ -68,14 +66,21 @@ const CartPage = ({ navigation }) => {
 
     try {
       const { status, payload } = await updateCart(infor._id, dataSend);
-
       if (status === 201) {
         setCart(payload);
-        console.log("update success")
+        setCartItems(res.payload.cart_products);
       }
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+
+    await handleGetCart();
+
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -85,26 +90,55 @@ const CartPage = ({ navigation }) => {
   }, [infor]);
 
   return (
-    <ScrollView>
-      {cart && (
+    <View>
+      <FlatList
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        horizontal={false}
+        data={cartItems}
+        onEndReached={() => {}}
+        onEndReachedThreshold={0.8}
+        renderItem={({ item, index }) => (
+          <CartItem
+            key={index}
+            data={item}
+            onDelete={handeDeleteItem}
+            onUpdate={updateCartItem}
+            navigation={navigation}
+          />
+        )}
+        keyExtractor={(item) => item.id}
+      />
+
+      {loading && cartItems.length === 0 && (
         <FlatList
           horizontal={false}
-          data={cart.cart_products}
-          onEndReached={() => {}}
-          onEndReachedThreshold={0.8}
-          renderItem={({ item, index }) => (
-            <CartItem
-              key={index}
-              data={item}
-              onDelete={handeDeleteItem}
-              onUpdate={updateCartItem}
-              navigation={navigation}
-            />
-          )}
-          keyExtractor={(item) => item.id}
+          data={[1, 2, 3, 4]}
+          renderItem={({ item }) => <CartItemLoading key={item} />}
         />
       )}
-    </ScrollView>
+
+      {!loading && cartItems.length === 0 && (
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          className="h-full"
+        >
+          <View className="flex items-center justify-center bg-white p-5 my-10 rounded-md">
+            <Text className="text-lg text-center font-medium">
+              Chưa có sản phẩm nào trong giỏ hàng
+            </Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+              <Text className="text-base text-center text-white bg-primary mt-3 px-5 py-2 rounded-md border border-transparent">
+                Mua Ngay
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
+    </View>
   );
 };
 

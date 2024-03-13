@@ -18,6 +18,7 @@ import {
 } from "../apiClient/auth";
 import { injectRouter } from "../config/axios";
 import Spinner from "react-native-loading-spinner-overlay";
+import OrderPage from "../pages/Order";
 
 const initInforUser = {
   _id: null,
@@ -85,7 +86,7 @@ const StackScreen = () => {
       }
       await handleGetUser();
     } catch (error) {
-      console.log("error", error)
+      console.log("error", error);
     }
 
     setLoading(false);
@@ -116,6 +117,12 @@ const StackScreen = () => {
             name="Product"
             options={{ headerTitle: "Chi tiết sản phẩm" }}
             component={ProductPage}
+          />
+
+          <stack.Screen
+            name="Orders"
+            options={{ headerTitle: "Đơn hàng của bạn" }}
+            component={OrderPage}
           />
           <stack.Screen
             name="SignIn"

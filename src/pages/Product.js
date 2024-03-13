@@ -105,7 +105,6 @@ const ProductPage = ({ route, navigation }) => {
   };
 
   const hanldeAddCart = useCallback(async () => {
-    console.log("add cart", user, infor._id);
     if (!user || !infor._id) {
       onShowModalLogin();
       return;
@@ -136,7 +135,6 @@ const ProductPage = ({ route, navigation }) => {
 
     try {
       const { status, payload } = await increaseCart(infor._id, data);
-      console.log(payload);
       if (status === 201) {
         onShowModal("Thêm thành công");
       }
@@ -250,13 +248,6 @@ const ProductPage = ({ route, navigation }) => {
             </Text>
           </View>
 
-          <View className="w-full flex-row items-center justify-center">
-            {/* <ProductQuantity
-              max={inventory}
-              setTotalProduct={setTotalProduct}
-              total={totalProduct}
-            /> */}
-          </View>
           {inventory > 0 && (
             <View className="py-5 gap-2">
               <TouchableOpacity>

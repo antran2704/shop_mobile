@@ -12,7 +12,7 @@ const CartItem = ({ navigation, data, onUpdate, onDelete }) => {
     data.variation ? data.variation.inventory : data.product.inventory
   );
   const total = useDebounce(totalProduct.toString(), 1000);
-  console.log("total", total);
+  
   const onClickProduct = () => {
     navigation.navigate("Product", { product_slug: data.product.slug });
   };
