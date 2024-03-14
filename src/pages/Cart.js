@@ -12,6 +12,7 @@ import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../View/StackScreen";
 import { deleteItemCart, getCart, updateCart } from "../apiClient/cart";
 import CartItemLoading from "../components/Cart/CartItemLoading";
+import { formatBigNumber } from "../helpers/number/fomatterCurrency";
 
 const CartPage = ({ navigation }) => {
   const { infor } = useContext(UserContext);
@@ -24,11 +25,11 @@ const CartPage = ({ navigation }) => {
   const handleGetCart = async () => {
     setLoading(true);
     try {
-      const res = await getCart(infor._id);
+      const { status, payload } = await getCart(infor._id);
 
-      if (res.status === 200) {
-        setCart(res.payload);
-        setCartItems(res.payload.cart_products);
+      if (status === 200) {
+        setCart(payload);
+        setCartItems(payload.cart_products);
       }
     } catch (error) {
       console.log(error);
@@ -48,7 +49,7 @@ const CartPage = ({ navigation }) => {
 
       if (status === 201) {
         setCart(payload);
-        setCartItems(res.payload.cart_products);
+        setCartItems(payload.cart_products);
       }
     } catch (error) {
       console.log(error);
@@ -68,7 +69,7 @@ const CartPage = ({ navigation }) => {
       const { status, payload } = await updateCart(infor._id, dataSend);
       if (status === 201) {
         setCart(payload);
-        setCartItems(res.payload.cart_products);
+        setCartItems(payload.cart_products);
       }
     } catch (error) {
       console.log(error);
@@ -91,26 +92,35 @@ const CartPage = ({ navigation }) => {
 
   return (
     <View>
-      <FlatList
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        horizontal={false}
-        data={cartItems}
-        onEndReached={() => {}}
-        onEndReachedThreshold={0.8}
-        renderItem={({ item, index }) => (
-          <CartItem
-            key={index}
-            data={item}
-            onDelete={handeDeleteItem}
-            onUpdate={updateCartItem}
-            navigation={navigation}
-          />
+      <View>
+        <FlatList
+          className="max-h-[82vh] min-h-[82vh]"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          horizontal={false}
+          data={cartItems}
+          onEndReached={() => {}}
+          onEndReachedThreshold={0.8}
+          renderItem={({ item, index }) => (
+            <CartItem
+              key={index}
+              data={item}
+              onDelete={handeDeleteItem}
+              onUpdate={updateCartItem}
+              navigation={navigation}
+            />
+          )}
+        />
+        {cart && (
+          <View className="w-full flex-row items-center justify-between bg-white p-5">
+            <Text className="text-lg font-medium">Tổng:</Text>
+            <Text className="text-lg font-medium text-primary">
+              {formatBigNumber(cart.cart_total)} VND
+            </Text>
+          </View>
         )}
-        keyExtractor={(item) => item.id}
-      />
-
+      </View>
       {loading && cartItems.length === 0 && (
         <FlatList
           horizontal={false}

@@ -12,7 +12,7 @@ const CartItem = ({ navigation, data, onUpdate, onDelete }) => {
     data.variation ? data.variation.inventory : data.product.inventory
   );
   const total = useDebounce(totalProduct.toString(), 1000);
-  
+
   const onClickProduct = () => {
     navigation.navigate("Product", { product_slug: data.product.slug });
   };
@@ -45,7 +45,11 @@ const CartItem = ({ navigation, data, onUpdate, onDelete }) => {
   }, [data]);
 
   return (
-    <View className="flex-row items-center justify-between w-full p-5 mb-5 bg-white rounded-md">
+    <View
+      className={`flex-row items-center justify-between w-full p-5 mb-5 bg-white rounded-md ${
+        inventory <= 0 ? "opacity-80" : ""
+      }`}
+    >
       <TouchableOpacity onPress={onClickProduct} className={`flex-row gap-5`}>
         <Image
           className="w-20 h-20 object-contain rounded-md"
@@ -64,19 +68,36 @@ const CartItem = ({ navigation, data, onUpdate, onDelete }) => {
           >
             {data.variation ? data.variation.title : data.product.title}
           </Text>
-          <Text className="w-full text-sm pt-2">
-            {data.quantity} X{" "}
-            {data.product.promotion_price > 0
-              ? formatBigNumber(data.product.promotion_price)
-              : formatBigNumber(data.product.price)}
-            {" VND"}
-          </Text>
+          {!data.variation && (
+            <Text className="w-full text-sm pt-2">
+              {data.quantity} X{" "}
+              {data.product.promotion_price > 0
+                ? formatBigNumber(data.product.promotion_price)
+                : formatBigNumber(data.product.price)}
+              {" VND"}
+            </Text>
+          )}
+
+          {data.variation && (
+            <Text className="w-full text-sm pt-2">
+              {data.quantity} X{" "}
+              {data.variation.promotion_price > 0
+                ? formatBigNumber(data.variation.promotion_price)
+                : formatBigNumber(data.variation.price)}
+              {" VND"}
+            </Text>
+          )}
           <View className="mt-2">
-            <ProductQuantity
-              max={inventory}
-              setTotalProduct={setTotalProduct}
-              total={totalProduct}
-            />
+            {inventory > 0 && (
+              <ProductQuantity
+                max={inventory}
+                setTotalProduct={setTotalProduct}
+                total={totalProduct}
+              />
+            )}
+            {inventory <= 0 && (
+              <Text className="text-lg text-primary font-medium">Sold out</Text>
+            )}
           </View>
         </View>
       </TouchableOpacity>

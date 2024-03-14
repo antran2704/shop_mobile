@@ -29,11 +29,25 @@ const typeList = [
   },
 ];
 
+
+const paymentMethods = {
+  cod: "Thanh toán khi giao hàng (COD)",
+  vnpay: "Thanh toán Online VNPay",
+  banking: "Chuyển khoản qua ngân hàng",
+};
+
 const contentStatus = {
   pending: "Đang chờ xác nhận",
   processing: "Đang chuẩn bị hàng",
   delivered: "Giao thành công",
   cancle: "Đã hủy",
+};
+
+const textStyle = {
+  pending: "text-pending",
+  processing: "text-blue-500",
+  delivered: "text-success",
+  cancle: "text-cancle",
 };
 
 const statusStyle = {
@@ -43,5 +57,4 @@ const statusStyle = {
   cancle: "bg-cancle",
 };
 
-
-export {typeList, ESelectOrderStatus, contentStatus, statusStyle}
+export { typeList, ESelectOrderStatus, contentStatus, statusStyle, textStyle, paymentMethods };

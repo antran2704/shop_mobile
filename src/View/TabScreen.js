@@ -5,6 +5,7 @@ import HomePage from "../pages/Home";
 import UserPage from "../pages/User";
 import CartPage from "../pages/Cart";
 import { useUser } from "@clerk/clerk-expo";
+import OrderDetailPage from "../pages/OrderDetail";
 const Tab = createBottomTabNavigator();
 
 const TabScreen = () => {
@@ -22,17 +23,17 @@ const TabScreen = () => {
           ),
         }}
       />
-      {/* {user && user.id && ( */}
-      <Tab.Screen
-        name="Cart"
-        component={CartPage}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cart" color={color} size={size} />
-          ),
-        }}
-      />
-      {/* )} */}
+      {user && user.id && (
+        <Tab.Screen
+          name="Cart"
+          component={CartPage}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="cart" color={color} size={size} />
+            ),
+          }}
+        />
+      )}
 
       <Tab.Screen
         name="User"

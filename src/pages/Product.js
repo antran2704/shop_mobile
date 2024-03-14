@@ -101,6 +101,11 @@ const ProductPage = ({ route, navigation }) => {
         onPress: () => console.log("Cancel Pressed"),
         style: "cancel",
       },
+      {
+        text: "Giỏ hàng",
+        onPress: () => navigation.navigate("Cart"),
+        style: "cancel",
+      },
     ]);
   };
 

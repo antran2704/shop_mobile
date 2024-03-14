@@ -9,13 +9,17 @@ import { contentStatus, statusStyle } from "../../data/order";
 
 const OrderItem = ({ navigation, data }) => {
   const onClickProduct = () => {
-    // navigation.navigate("Product", { product_slug: data.product.slug });
+    navigation.navigate("OrderDetail", { order_id: data.order_id });
   };
 
   return (
     <View className="w-full pt-2 pb-5 mb-5 bg-white rounded-md">
       <View className="flex-row justify-end px-2 pb-2 mb-4 border-b border-borderColor">
-        <Text className={`w-fit text-sm font-medium px-3 py-1 text-white ${statusStyle[data.status]} rounded-md`}>
+        <Text
+          className={`w-fit text-sm font-medium px-3 py-1 text-white ${
+            statusStyle[data.status]
+          } rounded-md`}
+        >
           {contentStatus[data.status]}
         </Text>
       </View>

@@ -14,11 +14,11 @@ import {
   getUserByEmail,
   handleSetAsyncStorage,
   login,
-  logout,
 } from "../apiClient/auth";
 import { injectRouter } from "../config/axios";
 import Spinner from "react-native-loading-spinner-overlay";
 import OrderPage from "../pages/Order";
+import OrderDetailPage from "../pages/OrderDetail";
 
 const initInforUser = {
   _id: null,
@@ -124,6 +124,13 @@ const StackScreen = () => {
             options={{ headerTitle: "Đơn hàng của bạn" }}
             component={OrderPage}
           />
+
+          <stack.Screen
+            name="OrderDetail"
+            options={{ headerTitle: "Thông tin đơn hàng" }}
+            component={OrderDetailPage}
+          />
+
           <stack.Screen
             name="SignIn"
             options={{ headerTitle: "Đăng nhập" }}
